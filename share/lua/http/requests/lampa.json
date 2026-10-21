@@ -1,0 +1,9 @@
+<?vlc
+local httprequests = require "httprequests"
+
+httprequests.processcommands()
+
+local statusTable = httprequests.get_lampa_status()
+
+httprequests.printTableAsJson(statusTable)
+?>

@@ -5,7 +5,7 @@
     <id>org.videolan.vlc</id>
     <launchable type="desktop-id">vlc.desktop</launchable>
     <metadata_license>CC0-1.0</metadata_license>
-    <name>VLC</name>
+    <name>JudAs</name>
     <summary>VLC media player, the open-source multimedia player</summary>
     <description>
         <p>

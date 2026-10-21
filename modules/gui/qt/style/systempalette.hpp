@@ -110,12 +110,12 @@ public:
     Q_PROPERTY(bool hasCSDImage READ hasCSDImage NOTIFY hasCSDImageChanged FINAL)
     Q_PROPERTY(CSDMetrics* csdMetrics READ getCSDMetrics NOTIFY CSDMetricsChanged FINAL)
 
-    //standard color definitions used by light/dark themes
-    COLOR_DEFINITION(orange500, "#FF8800");
-    COLOR_DEFINITION(orange800, "#FF610A");
+    //standard color definitions used by light/dark themes (Lampa Green accent)
+    COLOR_DEFINITION(orange500, "#12CF51");
+    COLOR_DEFINITION(orange800, "#0E9F3E");
 
-    COLOR_DEFINITION(orange400, "#f89a06"); //FIXME name have been chosen randomly by me
-    COLOR_DEFINITION(orange200, "#e29a06"); //FIXME name have been chosen randomly by me
+    COLOR_DEFINITION(orange400, "#28A745");
+    COLOR_DEFINITION(orange200, "#00FF87");
 
     COLOR_DEFINITION(darkGrey200, "#1E1E1E");
     COLOR_DEFINITION(darkGrey300, "#212121");

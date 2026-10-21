@@ -1,0 +1,51 @@
+name: Build JudAs Google TV APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Build JudAs Google TV APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up NDK
+        uses: nsetup/setup-ndk@v1
+        with:
+          ndk-version: r26b
+
+      - name: Install Meson & Ninja
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y meson ninja-build gettext pkg-config yasm nasm
+
+      - name: Build JudAs Release APK
+        run: |
+          echo "Building JudAs for Google TV / Android TV (ARM64)..."
+          mkdir -p build-android
+          meson setup build-android --buildtype=release
+          meson compile -C build-android
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: JudAs-GoogleTV-v1.0.0.apk
+          path: build-android/*.apk

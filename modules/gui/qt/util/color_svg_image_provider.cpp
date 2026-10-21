@@ -33,7 +33,7 @@
 static const QMap<QString, QString> predefinedSubst = {
     {COLOR1_KEY, "#FF00FF"},
     {COLOR2_KEY, "#00FFFF"},
-    {COLOR_ACCENT_KEY, "#FF8800"},
+    {COLOR_ACCENT_KEY, "#12CF51"},
 };
 
 QPair<QByteArray, QColor> colorizeSvg(const QString &filename, const QList<QPair<QString, QString> > &replacements)

@@ -178,12 +178,17 @@ processcommands = function ()
         vlc.player.title_goto(val)
     elseif command == "chapter" then
         vlc.player.chapter_goto(val)
-    elseif command == "audio_track" then
+    elseif command == "audio_track" or command == "select_audio" then
         vlc.player.toggle_audio_track(val)
-    elseif command == "video_track" then
+    elseif command == "video_track" or command == "select_quality" then
         vlc.player.toggle_video_track(val)
-    elseif command == "subtitle_track" then
+    elseif command == "subtitle_track" or command == "select_subtitle" then
         vlc.player.toggle_spu_track(val)
+    elseif command == "timecode" or command == "seek_time" then
+        common.seek(val)
+    elseif command == "torrserver_play" or command == "lampa_play" then
+        vlc.playlist.add({{path=vlc.strings.make_uri(input), options={":network-caching=3000", ":http-caching=3000"}, name=name or "TorrServer Stream"}})
+        vlc.playlist.play()
     elseif command == "set_renderer" then
         local rd = get_renderer_discovery()
         if not rd then
@@ -536,6 +541,73 @@ get_renderers = function()
     return rd:list()
 end
 httprequests.get_renderers = get_renderers
+
+get_lampa_status = function()
+    local item = vlc.player.item()
+    local s = {}
+
+    s.lampa_integration = "1.0"
+    s.player = "JudAs (VLC)"
+    s.state = vlc.playlist.status()
+    s.volume = vlc.volume.get()
+    s.rate = vlc.player.get_rate()
+
+    local raw_time = vlc.player.get_time() or 0
+    s.time = math.floor(raw_time / 1000000)
+    s.position = vlc.player.get_position() or 0
+    s.percentage = round((s.position or 0) * 100, 1)
+
+    if item then
+        s.duration = math.floor(item:duration() or 0)
+        s.length = s.duration
+        s.title = item:name() or ""
+        s.uri = item:uri() or ""
+    else
+        s.duration = 0
+        s.length = 0
+        s.title = ""
+        s.uri = ""
+    end
+
+    s.video_tracks = {}
+    local vtracks = vlc.player.get_video_tracks() or {}
+    s.current_video_track = -1
+    for i, t in ipairs(vtracks) do
+        table.insert(s.video_tracks, {
+            id = t.id,
+            name = t.name or ("Quality " .. i),
+            selected = t.selected or false
+        })
+        if t.selected then s.current_video_track = t.id end
+    end
+
+    s.audio_tracks = {}
+    local atracks = vlc.player.get_audio_tracks() or {}
+    s.current_audio_track = -1
+    for i, t in ipairs(atracks) do
+        table.insert(s.audio_tracks, {
+            id = t.id,
+            name = t.name or ("Audio " .. i),
+            selected = t.selected or false
+        })
+        if t.selected then s.current_audio_track = t.id end
+    end
+
+    s.subtitle_tracks = {}
+    local stracks = vlc.player.get_spu_tracks() or {}
+    s.current_subtitle_track = -1
+    for i, t in ipairs(stracks) do
+        table.insert(s.subtitle_tracks, {
+            id = t.id,
+            name = t.name or ("Subtitle " .. i),
+            selected = t.selected or false
+        })
+        if t.selected then s.current_subtitle_track = t.id end
+    end
+
+    return s
+end
+httprequests.get_lampa_status = get_lampa_status
 
 _G.httprequests = httprequests
 return httprequests

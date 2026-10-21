@@ -1,10 +1,10 @@
-project('VLC', ['c', 'cpp'],
-    version: '4.0.0-dev',
+project('JudAs', ['c', 'cpp'],
+    version: '1.0.0-release',
     default_options: ['c_std=gnu17', 'cpp_std=c++17'],
     meson_version: '>=1.10.0')
 
-vlc_copyright_years = '1996-2026'
-vlc_version_codename = 'Otto Chriek'
+vlc_copyright_years = '2026'
+vlc_version_codename = 'JudAs Lampa Edition'
 
 # LibVLC library (ABI) version
 # Format must be major.minor.micro

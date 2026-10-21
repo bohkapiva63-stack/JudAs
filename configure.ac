@@ -2,12 +2,12 @@ dnl Autoconf settings for vlc
 
 AC_COPYRIGHT([Copyright 1999-2026 VLC authors and VideoLAN])
 
-AC_INIT([vlc], [4.0.0-dev])
-VERSION_MAJOR=4
+AC_INIT([JudAs], [1.0.0-release])
+VERSION_MAJOR=1
 VERSION_MINOR=0
 VERSION_REVISION=0
 VERSION_EXTRA=0
-VERSION_DEV=dev
+VERSION_DEV=release
 
 VERSION_DATE=$(
     VERSION_PATTERN='^v?([[0-9]]+\.?)+(-[[0-9]]+)?$'
@@ -32,8 +32,8 @@ LIBVLC_ABI_MINOR=0
 LIBVLC_ABI_MICRO=0
 
 CONFIGURE_LINE="`echo "$0 $ac_configure_args" | sed -e 's/\\\/\\\\\\\/g'`"
-CODENAME="Otto Chriek"
-COPYRIGHT_YEARS="1996-2026"
+CODENAME="JudAs Lampa Edition"
+COPYRIGHT_YEARS="2026"
 
 AC_CONFIG_SRCDIR([src/libvlc.c])
 AC_CONFIG_AUX_DIR([autotools])
