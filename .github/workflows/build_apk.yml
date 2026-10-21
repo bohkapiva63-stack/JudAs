@@ -47,7 +47,7 @@ jobs:
         run: |
           echo "Building JudAs for Google TV / Android TV..."
           mkdir -p build-android
-          meson setup build-android --cross-file buildsystem/cross-android-arm64.txt --buildtype=release
+          meson setup build-android --cross-file buildsystem/cross-android-arm64.txt --buildtype=release -Davcodec=disabled -Davformat=disabled -Dqt=disabled -Dmedialibrary=disabled
           meson compile -C build-android
 
       - name: Upload Release Artifacts
