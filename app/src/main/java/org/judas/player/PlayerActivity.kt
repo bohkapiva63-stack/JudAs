@@ -232,17 +232,20 @@ class PlayerActivity : AppCompatActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (isScreenLocked && keyCode != KeyEvent.KEYCODE_BACK) return true
 
+        // Если панель управления открыта — отдаем управление стандартному Android фокусу
+        if (binding.playerView.isControllerFullyVisible) {
+            if (keyCode == KeyEvent.KEYCODE_MENU || keyCode == KeyEvent.KEYCODE_INFO) {
+                showSettingsDialog()
+                return true
+            }
+            return super.onKeyDown(keyCode, event)
+        }
+
         return when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                player?.let { p ->
-                    if (p.isPlaying) {
-                        p.pause()
-                        showIndicator("⏸ Пауза")
-                    } else {
-                        p.play()
-                        showIndicator("▶ Воспроизведение")
-                    }
-                }
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER,
+            KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> {
+                // При нажатии Вниз/Вверх/ОК во время скрытого интерфейса — показываем панель
+                binding.playerView.showController()
                 true
             }
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_MEDIA_REWIND -> {
@@ -257,14 +260,6 @@ class PlayerActivity : AppCompatActivity() {
                     p.seekTo((p.currentPosition + 10000).coerceAtMost(p.duration))
                     showIndicator("⏩ +10 сек")
                 }
-                true
-            }
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                adjustVolume(1)
-                true
-            }
-            KeyEvent.KEYCODE_DPAD_DOWN -> {
-                adjustVolume(-1)
                 true
             }
             KeyEvent.KEYCODE_MENU, KeyEvent.KEYCODE_INFO -> {
