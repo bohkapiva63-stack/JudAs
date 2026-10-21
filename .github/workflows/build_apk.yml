@@ -24,28 +24,33 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Set up NDK
-        uses: android-actions/setup-ndk@v1
+      - name: Set up Python & Meson
+        uses: actions/setup-python@v5
         with:
-          ndk-version: r26b
+          python-version: '3.11'
 
-      - name: Install Meson & Ninja
+      - name: Install Build Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y meson ninja-build gettext pkg-config yasm nasm
+          pip install --upgrade pip meson ninja
+
+      - name: Configure Android SDK & NDK Environment
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_NDK=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
+          echo "Android SDK path: $ANDROID_SDK_ROOT"
+          echo "Android NDK path: $ANDROID_NDK_LATEST_HOME"
 
       - name: Build JudAs Release APK
         run: |
-          echo "Building JudAs for Google TV / Android TV (ARM64)..."
+          echo "Building JudAs for Google TV / Android TV..."
           mkdir -p build-android
-          meson setup build-android --buildtype=release
+          meson setup build-android --cross-file buildsystem/cross-android-arm64.txt --buildtype=release
           meson compile -C build-android
 
-      - name: Upload Release APK
+      - name: Upload Release Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: JudAs-GoogleTV-v1.0.0.apk
-          path: build-android/*.apk
+          path: build-android/*
