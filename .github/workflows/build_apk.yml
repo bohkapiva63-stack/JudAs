@@ -28,7 +28,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Set up NDK
-        uses: nsetup/setup-ndk@v1
+        uses: android-actions/setup-ndk@v1
         with:
           ndk-version: r26b
 
