@@ -3,7 +3,7 @@
     <style name="Theme.JudAs" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/judas_green</item>
         <item name="colorPrimaryVariant">@color/judas_green_dark</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorOnPrimary">#000000</item>
         <item name="colorSecondary">@color/judas_green_accent</item>
         <item name="colorOnSecondary">#000000</item>
         <item name="android:statusBarColor">@color/bg_dark</item>
