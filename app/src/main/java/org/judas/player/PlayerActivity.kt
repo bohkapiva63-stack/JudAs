@@ -108,7 +108,13 @@ class PlayerActivity : AppCompatActivity() {
     private fun initPlayer(uri: Uri) {
         val renderersFactory = DefaultRenderersFactory(this).apply {
             setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
+            setEnableDecoderFallback(true)
         }
+
+        val audioAttributes = androidx.media3.common.AudioAttributes.Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+            .build()
 
         player = ExoPlayer.Builder(this, renderersFactory).build().apply {
             binding.playerView.player = this
@@ -116,6 +122,13 @@ class PlayerActivity : AppCompatActivity() {
             
             // Set 10 seconds timeout for bottom/player controls
             binding.playerView.controllerShowTimeoutMs = 10000
+
+            setAudioAttributes(audioAttributes, true)
+
+            // Enable 4K, HDR10, and Dolby Vision track selection
+            trackSelectionParameters = trackSelectionParameters.buildUpon()
+                .setMaxVideoSize(3840, 2160)
+                .build()
 
             val mediaItem = MediaItem.Builder()
                 .setUri(uri)
