@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.JudAs" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#12CF51</item>
+        <item name="colorPrimaryVariant">#0E9F3E</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#28A745</item>
+        <item name="colorSecondaryVariant">#00FF87</item>
+        <item name="colorOnSecondary">#000000</item>
+        <item name="android:statusBarColor">#121212</item>
+    </style>
+</resources>
