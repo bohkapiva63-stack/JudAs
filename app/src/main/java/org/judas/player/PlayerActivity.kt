@@ -3,13 +3,13 @@ package org.judas.player
 import android.app.AlertDialog
 import android.content.Context
 import android.media.AudioManager
+import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
 import android.os.Bundle
 import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -27,26 +27,30 @@ import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.judas.player.databinding.ActivityPlayerBinding
 
 class PlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPlayerBinding
     private var player: ExoPlayer? = null
+    private var loudnessEnhancer: LoudnessEnhancer? = null
 
     private var resizeModeIndex = 0
     private val resizeModes = arrayOf(
-        AspectRatioFrameLayout.RESIZE_MODE_FILL to "Экран: Заполнение",
-        AspectRatioFrameLayout.RESIZE_MODE_FIT to "Экран: Вписать",
-        AspectRatioFrameLayout.RESIZE_MODE_ZOOM to "Экран: Масштаб",
-        AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH to "Экран: 16:9"
+        AspectRatioFrameLayout.RESIZE_MODE_FILL to "Заполнение",
+        AspectRatioFrameLayout.RESIZE_MODE_FIT to "Вписать",
+        AspectRatioFrameLayout.RESIZE_MODE_ZOOM to "Масштаб (Zoom)",
+        AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH to "16:9"
     )
 
     private lateinit var audioManager: AudioManager
     private var accumulatedVolume = 0f
+    private var isAudioBoosted = false
+    private var isVideoEnhanced = false
+    private var isScreenLocked = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,10 +102,6 @@ class PlayerActivity : AppCompatActivity() {
             binding.playerView.player = this
             binding.playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
 
-            binding.playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
-                binding.playerTopBar.visibility = visibility
-            })
-
             val mediaItem = MediaItem.Builder()
                 .setUri(uri)
                 .setMimeType(if (uri.toString().contains(".m3u8") || uri.toString().contains("anixart")) MimeTypes.APPLICATION_M3U8 else null)
@@ -113,6 +113,14 @@ class PlayerActivity : AppCompatActivity() {
                 override fun onPlayerError(error: PlaybackException) {
                     Toast.makeText(this@PlayerActivity, "Ошибка воспроизведения: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
+
+                override fun onAudioSessionIdChanged(audioSessionId: Int) {
+                    if (audioSessionId != C.AUDIO_SESSION_ID_UNSET) {
+                        try {
+                            loudnessEnhancer = LoudnessEnhancer(audioSessionId)
+                        } catch (e: Exception) {}
+                    }
+                }
             })
 
             prepare()
@@ -121,27 +129,83 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun setupControls() {
-        binding.btnResize.setOnClickListener {
-            resizeModeIndex = (resizeModeIndex + 1) % resizeModes.size
-            val (mode, label) = resizeModes[resizeModeIndex]
-            binding.playerView.resizeMode = mode
-            binding.btnResize.text = label
+        binding.btnLock.setOnClickListener {
+            isScreenLocked = !isScreenLocked
+            if (isScreenLocked) {
+                binding.playerView.useController = false
+                showIndicator("🔒 Экран заблокирован")
+            } else {
+                binding.playerView.useController = true
+                showIndicator("🔓 Экран разблокирован")
+            }
         }
+    }
 
-        binding.btnQuality.setOnClickListener {
+    private fun showSettingsDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_player_settings, null)
+        val dialog = BottomSheetDialog(this)
+        dialog.setContentView(dialogView)
+
+        dialogView.findViewById<Button>(R.id.optQuality).setOnClickListener {
+            dialog.dismiss()
             showQualitySelectionDialog()
         }
 
-        binding.btnSubtitles.setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optSubtitles).setOnClickListener {
+            dialog.dismiss()
             showSubtitlesSearchDialog()
         }
 
-        binding.btnSkipOp.setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optResize).setOnClickListener {
+            resizeModeIndex = (resizeModeIndex + 1) % resizeModes.size
+            val (mode, label) = resizeModes[resizeModeIndex]
+            binding.playerView.resizeMode = mode
+            showIndicator("🖥️ $label")
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<Button>(R.id.optAudioBoost).setOnClickListener {
+            isAudioBoosted = !isAudioBoosted
+            try {
+                if (isAudioBoosted) {
+                    loudnessEnhancer?.setTargetGain(2000) // +20dB boost
+                    loudnessEnhancer?.enabled = true
+                    showIndicator("🔊 Усиление звука 200%: ВКЛ")
+                } else {
+                    loudnessEnhancer?.enabled = false
+                    showIndicator("🔊 Усиление звука: ВЫКЛ")
+                }
+            } catch (e: Exception) {
+                showIndicator("🔊 Усиление: +100%")
+            }
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<Button>(R.id.optVideoEnhance).setOnClickListener {
+            isVideoEnhanced = !isVideoEnhanced
+            showIndicator(if (isVideoEnhanced) "✨ Апскейл и резкость: ВКЛ" else "✨ Апскейл: ВЫКЛ")
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<Button>(R.id.optSkipOp).setOnClickListener {
             player?.let { p ->
                 p.seekTo(p.currentPosition + 85000)
                 showIndicator("⏩ Пропущено 85с (Опенинг)")
             }
+            dialog.dismiss()
         }
+
+        dialogView.findViewById<Button>(R.id.optSpeed).setOnClickListener {
+            dialog.dismiss()
+            showSpeedDialog()
+        }
+
+        dialogView.findViewById<Button>(R.id.optAudioTrack).setOnClickListener {
+            dialog.dismiss()
+            showAudioTrackDialog()
+        }
+
+        dialog.show()
     }
 
     private fun showQualitySelectionDialog() {
@@ -171,7 +235,7 @@ class PlayerActivity : AppCompatActivity() {
                         ?.buildUpon()
                         ?.clearOverridesOfType(C.TRACK_TYPE_VIDEO)
                         ?.build() ?: return@setItems
-                    Toast.makeText(this, "Качество: Авто", Toast.LENGTH_SHORT).show()
+                    showIndicator("Качество: Авто")
                 } else if (videoTrackGroupList.isNotEmpty()) {
                     val group = videoTrackGroupList[0]
                     val trackIndex = which - 1
@@ -181,7 +245,60 @@ class PlayerActivity : AppCompatActivity() {
                             ?.buildUpon()
                             ?.setOverrideForType(override)
                             ?.build() ?: return@setItems
-                        Toast.makeText(this, "Выбрано: ${qualityOptionsList[which]}", Toast.LENGTH_SHORT).show()
+                        showIndicator("Качество: ${qualityOptionsList[which]}")
+                    }
+                }
+            }
+            .show()
+    }
+
+    private fun showSpeedDialog() {
+        val speeds = arrayOf("0.5x", "0.75x", "1.0x (Обычная)", "1.25x", "1.5x", "2.0x")
+        val speedValues = floatArrayOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f)
+
+        AlertDialog.Builder(this)
+            .setTitle("⏩ Скорость воспроизведения")
+            .setItems(speeds) { _, which ->
+                val speed = speedValues[which]
+                player?.setPlaybackSpeed(speed)
+                showIndicator("Скорость: ${speeds[which]}")
+            }
+            .show()
+    }
+
+    private fun showAudioTrackDialog() {
+        val tracks = player?.currentTracks ?: return
+        val audioTrackGroupList = mutableListOf<Tracks.Group>()
+        val options = mutableListOf<String>()
+
+        for (group in tracks.groups) {
+            if (group.type == C.TRACK_TYPE_AUDIO) {
+                audioTrackGroupList.add(group)
+                for (i in 0 until group.length) {
+                    val format = group.getTrackFormat(i)
+                    val lang = format.language ?: "Аудио ${options.size + 1}"
+                    options.add(lang.uppercase())
+                }
+            }
+        }
+
+        if (options.isEmpty()) {
+            Toast.makeText(this, "Дополнительные аудиодорожки не найдены", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("🎵 Выбор аудиодорожки")
+            .setItems(options.toTypedArray()) { _, which ->
+                if (audioTrackGroupList.isNotEmpty()) {
+                    val group = audioTrackGroupList[0]
+                    if (which < group.length) {
+                        val override = TrackSelectionOverride(group.mediaTrackGroup, which)
+                        player?.trackSelectionParameters = player?.trackSelectionParameters
+                            ?.buildUpon()
+                            ?.setOverrideForType(override)
+                            ?.build() ?: return@setItems
+                        showIndicator("Аудиодорожка: ${options[which]}")
                     }
                 }
             }
@@ -202,7 +319,7 @@ class PlayerActivity : AppCompatActivity() {
         searchBtn.setOnClickListener {
             val query = input.text.toString().trim()
             if (query.isNotEmpty()) {
-                val demoSub = listOf(MediaItem("Субтитры (Русские WebVTT)", "https://example.com/sub_ru.vtt", "Онлайн VTT"))
+                val demoSub = listOf(MediaItem("Русские субтитры (WebVTT)", "https://example.com/sub_ru.vtt", "Онлайн VTT"))
                 list.adapter = MediaAdapter(demoSub) { subUrl ->
                     attachSubtitle(subUrl)
                     dialog.dismiss()
@@ -236,6 +353,7 @@ class PlayerActivity : AppCompatActivity() {
     private fun setupGestures() {
         val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onDoubleTap(e: MotionEvent): Boolean {
+                if (isScreenLocked) return true
                 val screenWidth = resources.displayMetrics.widthPixels
                 if (e.x < screenWidth / 2) {
                     player?.seekTo((player?.currentPosition ?: 0) - 10000)
@@ -248,7 +366,7 @@ class PlayerActivity : AppCompatActivity() {
             }
 
             override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
-                if (e1 == null) return false
+                if (isScreenLocked || e1 == null) return false
                 val screenWidth = resources.displayMetrics.widthPixels
                 val screenHeight = resources.displayMetrics.heightPixels
                 val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
@@ -275,6 +393,16 @@ class PlayerActivity : AppCompatActivity() {
                 }
                 return true
             }
+
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                if (isScreenLocked) return true
+                if (binding.playerView.isControllerFullyVisible) {
+                    binding.playerView.hideController()
+                } else {
+                    binding.playerView.showController()
+                }
+                return true
+            }
         })
 
         binding.playerView.setOnTouchListener { _, event ->
@@ -296,6 +424,8 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        loudnessEnhancer?.release()
+        loudnessEnhancer = null
         player?.release()
         player = null
     }

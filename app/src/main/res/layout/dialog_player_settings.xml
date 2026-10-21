@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@color/card_dark">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⚙️ Настройки плеера JudAs"
+        android:textColor="@color/judas_green"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/optQuality"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="🎥 Качество видео (Разрешение)"
+        android:textColor="@color/text_light"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/optSubtitles"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="🔍 Онлайн поиск субтитров"
+        android:textColor="@color/text_light"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/optResize"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="🖥️ Масштаб экрана (Заполнение / 16:9)"
+        android:textColor="@color/text_light"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/optAudioBoost"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="🔊 Усилитель звука 200% (Audio Boost)"
+        android:textColor="@color/judas_green_accent"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/optVideoEnhance"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="✨ Апскейл и резкость видео"
+        android:textColor="@color/judas_green_accent"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/optSkipOp"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="⏩ Пропустить опенинг / интро (+85с)"
+        android:textColor="@color/text_light"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/optSpeed"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="⏩ Скорость воспроизведения"
+        android:textColor="@color/text_light"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/optAudioTrack"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:text="🎵 Выбор аудиодорожки / Языка"
+        android:textColor="@color/text_light"
+        android:textSize="15sp" />
+
+</LinearLayout>
