@@ -1,12 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="bottom"
-    android:background="#80000000"
+    android:background="#A0000000"
     android:padding="16dp">
 
+    <!-- Center Play/Pause/Rewind Controls -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <ImageButton
+            android:id="@id/exo_prev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_previous"
+            app:tint="@color/text_light" />
+
+        <ImageButton
+            android:id="@id/exo_rew"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_rew"
+            app:tint="@color/judas_green" />
+
+        <ImageButton
+            android:id="@id/exo_play"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginStart="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_play"
+            app:tint="@color/judas_green" />
+
+        <ImageButton
+            android:id="@id/exo_pause"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginStart="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_pause"
+            app:tint="@color/judas_green" />
+
+        <ImageButton
+            android:id="@id/exo_ffwd"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_ff"
+            app:tint="@color/judas_green" />
+
+        <ImageButton
+            android:id="@id/exo_next"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_next"
+            app:tint="@color/text_light" />
+
+    </LinearLayout>
+
+    <!-- Bottom Progress Bar & Timecodes & Custom JudAs Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,58 +82,60 @@
             android:id="@id/exo_position"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#12CF51"
-            android:textSize="14sp" />
+            android:textColor="@color/judas_green"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <androidx.media3.ui.DefaultTimeBar
             android:id="@id/exo_progress"
             android:layout_width="0dp"
-            android:layout_height="26dp"
+            android:layout_height="28dp"
             android:layout_weight="1"
-            android:layout_marginHorizontal="8dp" />
+            android:layout_marginHorizontal="12dp"
+            app:played_color="@color/judas_green"
+            app:scrubber_color="@color/judas_green_accent"
+            app:unplayed_color="#40FFFFFF" />
 
         <TextView
             android:id="@id/exo_duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#A0E0B0"
+            android:textColor="@color/text_muted"
             android:textSize="14sp" />
-    </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="12dp">
-
+        <!-- 📸 Snapshot Button -->
         <ImageButton
-            android:id="@id/exo_rew"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:id="@+id/btnSnapshot"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="12dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_media_rew" />
+            android:src="@android:drawable/ic_menu_camera"
+            app:tint="@color/text_light"
+            android:contentDescription="Скриншот" />
 
+        <!-- 🔒 Lock Button -->
         <ImageButton
-            android:id="@id/exo_play"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:id="@+id/btnLockControl"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_media_play" />
+            android:src="@android:drawable/ic_lock_lock"
+            app:tint="@color/text_light"
+            android:contentDescription="Заблокировать" />
 
+        <!-- ⚙️ Custom JudAs Settings Button -->
         <ImageButton
-            android:id="@id/exo_pause"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:id="@+id/btnJudasSettings"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginStart="8dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_media_pause" />
+            android:src="@android:drawable/ic_menu_preferences"
+            app:tint="@color/judas_green"
+            android:contentDescription="Настройки JudAs" />
 
-        <ImageButton
-            android:id="@id/exo_ffwd"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_media_ff" />
     </LinearLayout>
 
 </LinearLayout>

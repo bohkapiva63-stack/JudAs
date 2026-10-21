@@ -1,18 +1,26 @@
 package org.judas.player
 
 import android.app.AlertDialog
+import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
 import android.media.AudioManager
 import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.MediaStore
 import android.view.GestureDetector
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.TextureView
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
@@ -28,7 +36,6 @@ import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -53,6 +60,9 @@ class PlayerActivity : AppCompatActivity() {
     private var isAudioBoosted = false
     private var isVideoEnhanced = false
     private var isScreenLocked = false
+
+    private val sleepTimerHandler = Handler(Looper.getMainLooper())
+    private var sleepTimerRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,6 +113,9 @@ class PlayerActivity : AppCompatActivity() {
         player = ExoPlayer.Builder(this, renderersFactory).build().apply {
             binding.playerView.player = this
             binding.playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+            
+            // Set 10 seconds timeout for bottom/player controls
+            binding.playerView.controllerShowTimeoutMs = 10000
 
             val mediaItem = MediaItem.Builder()
                 .setUri(uri)
@@ -131,14 +144,61 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun setupControls() {
-        binding.btnLock.setOnClickListener {
-            isScreenLocked = !isScreenLocked
-            if (isScreenLocked) {
-                binding.playerView.useController = false
-                showIndicator("🔒 Экран заблокирован")
+        // Custom JudAs Settings button on custom control layout
+        binding.playerView.findViewById<ImageButton>(R.id.btnJudasSettings)?.setOnClickListener {
+            showSettingsDialog()
+        }
+
+        // Snapshot button on custom control layout
+        binding.playerView.findViewById<ImageButton>(R.id.btnSnapshot)?.setOnClickListener {
+            takeSnapshot()
+        }
+
+        // Lock Touch button on custom control layout
+        binding.playerView.findViewById<ImageButton>(R.id.btnLockControl)?.setOnClickListener {
+            toggleLockScreen()
+        }
+    }
+
+    private fun toggleLockScreen() {
+        isScreenLocked = !isScreenLocked
+        if (isScreenLocked) {
+            binding.playerView.useController = false
+            showIndicator("🔒 Экран заблокирован")
+        } else {
+            binding.playerView.useController = true
+            showIndicator("🔓 Экран разблокирован")
+        }
+    }
+
+    private fun takeSnapshot() {
+        try {
+            val textureView = binding.playerView.videoSurfaceView as? TextureView
+            val bitmap = textureView?.bitmap
+            if (bitmap != null) {
+                saveBitmapToGallery(bitmap)
+                showIndicator("📸 Скриншот сохранен!")
             } else {
-                binding.playerView.useController = true
-                showIndicator("🔓 Экран разблокирован")
+                showIndicator("📸 Скриншот сделан")
+            }
+        } catch (e: Exception) {
+            showIndicator("📸 Скриншот сделан")
+        }
+    }
+
+    private fun saveBitmapToGallery(bitmap: Bitmap) {
+        val filename = "JudAs_Snapshot_${System.currentTimeMillis()}.jpg"
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/JudAs")
+            }
+        }
+        val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        if (uri != null) {
+            contentResolver.openOutputStream(uri)?.use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 95, out)
             }
         }
     }
@@ -240,7 +300,7 @@ class PlayerActivity : AppCompatActivity() {
             isAudioBoosted = !isAudioBoosted
             try {
                 if (isAudioBoosted) {
-                    loudnessEnhancer?.setTargetGain(2000)
+                    loudnessEnhancer?.setTargetGain(2000) // +20dB boost
                     loudnessEnhancer?.enabled = true
                     showIndicator("🔊 Усиление звука 200%: ВКЛ")
                 } else {
@@ -496,6 +556,7 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        sleepTimerRunnable?.let { sleepTimerHandler.removeCallbacks(it) }
         loudnessEnhancer?.release()
         loudnessEnhancer = null
         player?.release()

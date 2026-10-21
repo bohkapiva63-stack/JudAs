@@ -10,22 +10,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:use_controller="true"
-        app:show_buffering="always" />
+        app:show_buffering="always"
+        app:controller_layout_id="@layout/custom_player_control_view" />
 
-    <!-- Lock Touch Button (Floating Top-Right) -->
-    <ImageButton
-        android:id="@+id/btnLock"
-        android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:background="#A0132B1D"
-        android:src="@android:drawable/ic_lock_lock"
-        android:contentDescription="Lock Screen" />
-
-    <!-- Gesture / Action Overlay Indicator -->
+    <!-- Gesture Indicator Overlay (Volume / Brightness) -->
     <TextView
         android:id="@+id/gestureIndicator"
         android:layout_width="wrap_content"
