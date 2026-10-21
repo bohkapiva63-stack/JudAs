@@ -7,6 +7,7 @@ import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
 import android.os.Bundle
 import android.view.GestureDetector
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -27,6 +28,7 @@ import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -141,6 +143,76 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    /* TV Remote Control D-pad Key Events */
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (isScreenLocked && keyCode != KeyEvent.KEYCODE_BACK) return true
+
+        return when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
+                player?.let { p ->
+                    if (p.isPlaying) {
+                        p.pause()
+                        showIndicator("⏸ Пауза")
+                    } else {
+                        p.play()
+                        showIndicator("▶ Воспроизведение")
+                    }
+                }
+                true
+            }
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_MEDIA_REWIND -> {
+                player?.let { p ->
+                    p.seekTo((p.currentPosition - 10000).coerceAtLeast(0))
+                    showIndicator("⏪ -10 сек")
+                }
+                true
+            }
+            KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
+                player?.let { p ->
+                    p.seekTo((p.currentPosition + 10000).coerceAtMost(p.duration))
+                    showIndicator("⏩ +10 сек")
+                }
+                true
+            }
+            KeyEvent.KEYCODE_DPAD_UP -> {
+                adjustVolume(1)
+                true
+            }
+            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                adjustVolume(-1)
+                true
+            }
+            KeyEvent.KEYCODE_MENU, KeyEvent.KEYCODE_INFO -> {
+                showSettingsDialog()
+                true
+            }
+            else -> super.onKeyDown(keyCode, event)
+        }
+    }
+
+    /* Mouse Wheel Scroll Handling */
+    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_SCROLL) {
+            val scrollY = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
+            if (scrollY > 0) {
+                adjustVolume(1)
+            } else if (scrollY < 0) {
+                adjustVolume(-1)
+            }
+            return true
+        }
+        return super.onGenericMotionEvent(event)
+    }
+
+    private fun adjustVolume(step: Int) {
+        val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val newVol = (currentVol + step).coerceIn(0, maxVol)
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVol, 0)
+        val pct = (newVol * 100) / maxVol
+        showIndicator("🔊 Громкость: $pct%")
+    }
+
     private fun showSettingsDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_player_settings, null)
         val dialog = BottomSheetDialog(this)
@@ -168,7 +240,7 @@ class PlayerActivity : AppCompatActivity() {
             isAudioBoosted = !isAudioBoosted
             try {
                 if (isAudioBoosted) {
-                    loudnessEnhancer?.setTargetGain(2000) // +20dB boost
+                    loudnessEnhancer?.setTargetGain(2000)
                     loudnessEnhancer?.enabled = true
                     showIndicator("🔊 Усиление звука 200%: ВКЛ")
                 } else {

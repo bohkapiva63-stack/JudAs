@@ -4,7 +4,9 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="12dp"
-    android:background="@color/card_dark"
+    android:focusable="true"
+    android:clickable="true"
+    android:background="@drawable/selector_focusable_card"
     android:layout_marginBottom="8dp">
 
     <ImageView
