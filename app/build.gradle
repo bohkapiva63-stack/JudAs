@@ -19,6 +19,18 @@ android {
         }
     }
 
+    flavorDimensions = ["device"]
+    productFlavors {
+        mobile {
+            dimension "device"
+            versionNameSuffix "-mobile"
+        }
+        tv {
+            dimension "device"
+            versionNameSuffix "-tv"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

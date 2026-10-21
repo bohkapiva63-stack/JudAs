@@ -1,8 +1,10 @@
 package org.judas.player
 
 import android.app.AlertDialog
+import android.app.UiModeManager
 import android.content.ContentValues
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.media.AudioManager
 import android.media.audiofx.LoudnessEnhancer
@@ -41,6 +43,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.judas.player.databinding.ActivityPlayerBinding
 
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class PlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPlayerBinding
@@ -60,6 +63,7 @@ class PlayerActivity : AppCompatActivity() {
     private var isAudioBoosted = false
     private var isVideoEnhanced = false
     private var isScreenLocked = false
+    private var isTv = false
 
     private val sleepTimerHandler = Handler(Looper.getMainLooper())
     private var sleepTimerRunnable: Runnable? = null
@@ -69,6 +73,8 @@ class PlayerActivity : AppCompatActivity() {
         try {
             binding = ActivityPlayerBinding.inflate(layoutInflater)
             setContentView(binding.root)
+
+            isTv = isTvDevice()
 
             hideSystemBars()
 
@@ -86,11 +92,21 @@ class PlayerActivity : AppCompatActivity() {
             }
 
             setupControls()
-            setupGestures()
+
+            if (isTv) {
+                Toast.makeText(this, "Режим TV: Управление пультом D-pad (Жесты отключены)", Toast.LENGTH_SHORT).show()
+            } else {
+                setupGestures()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "Ошибка запуска плеера: ${e.message}", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun isTvDevice(): Boolean {
+        val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
+        return uiModeManager?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
     }
 
     override fun onResume() {
@@ -120,12 +136,10 @@ class PlayerActivity : AppCompatActivity() {
             binding.playerView.player = this
             binding.playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
             
-            // Set 10 seconds timeout for bottom/player controls
             binding.playerView.controllerShowTimeoutMs = 10000
 
             setAudioAttributes(audioAttributes, true)
 
-            // Enable 4K, HDR10, and Dolby Vision track selection
             trackSelectionParameters = trackSelectionParameters.buildUpon()
                 .setMaxVideoSize(3840, 2160)
                 .build()
@@ -157,23 +171,21 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun setupControls() {
-        // Custom JudAs Settings button on custom control layout
         binding.playerView.findViewById<ImageButton>(R.id.btnJudasSettings)?.setOnClickListener {
             showSettingsDialog()
         }
 
-        // Snapshot button on custom control layout
         binding.playerView.findViewById<ImageButton>(R.id.btnSnapshot)?.setOnClickListener {
             takeSnapshot()
         }
 
-        // Lock Touch button on custom control layout
         binding.playerView.findViewById<ImageButton>(R.id.btnLockControl)?.setOnClickListener {
             toggleLockScreen()
         }
     }
 
     private fun toggleLockScreen() {
+        if (isTv) return // Lock is disabled on TV
         isScreenLocked = !isScreenLocked
         if (isScreenLocked) {
             binding.playerView.useController = false
@@ -291,17 +303,17 @@ class PlayerActivity : AppCompatActivity() {
         val dialog = BottomSheetDialog(this)
         dialog.setContentView(dialogView)
 
-        dialogView.findViewById<Button>(R.id.optQuality).setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optQuality)?.setOnClickListener {
             dialog.dismiss()
             showQualitySelectionDialog()
         }
 
-        dialogView.findViewById<Button>(R.id.optSubtitles).setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optSubtitles)?.setOnClickListener {
             dialog.dismiss()
             showSubtitlesSearchDialog()
         }
 
-        dialogView.findViewById<Button>(R.id.optResize).setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optResize)?.setOnClickListener {
             resizeModeIndex = (resizeModeIndex + 1) % resizeModes.size
             val (mode, label) = resizeModes[resizeModeIndex]
             binding.playerView.resizeMode = mode
@@ -309,11 +321,11 @@ class PlayerActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
-        dialogView.findViewById<Button>(R.id.optAudioBoost).setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optAudioBoost)?.setOnClickListener {
             isAudioBoosted = !isAudioBoosted
             try {
                 if (isAudioBoosted) {
-                    loudnessEnhancer?.setTargetGain(2000) // +20dB boost
+                    loudnessEnhancer?.setTargetGain(2000)
                     loudnessEnhancer?.enabled = true
                     showIndicator("🔊 Усиление звука 200%: ВКЛ")
                 } else {
@@ -326,13 +338,13 @@ class PlayerActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
-        dialogView.findViewById<Button>(R.id.optVideoEnhance).setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optVideoEnhance)?.setOnClickListener {
             isVideoEnhanced = !isVideoEnhanced
             showIndicator(if (isVideoEnhanced) "✨ Апскейл и резкость: ВКЛ" else "✨ Апскейл: ВЫКЛ")
             dialog.dismiss()
         }
 
-        dialogView.findViewById<Button>(R.id.optSkipOp).setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optSkipOp)?.setOnClickListener {
             player?.let { p ->
                 p.seekTo(p.currentPosition + 85000)
                 showIndicator("⏩ Пропущено 85с (Опенинг)")
@@ -340,12 +352,12 @@ class PlayerActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
-        dialogView.findViewById<Button>(R.id.optSpeed).setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optSpeed)?.setOnClickListener {
             dialog.dismiss()
             showSpeedDialog()
         }
 
-        dialogView.findViewById<Button>(R.id.optAudioTrack).setOnClickListener {
+        dialogView.findViewById<Button>(R.id.optAudioTrack)?.setOnClickListener {
             dialog.dismiss()
             showAudioTrackDialog()
         }
