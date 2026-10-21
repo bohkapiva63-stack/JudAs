@@ -17,7 +17,8 @@ class PlayerActivity : AppCompatActivity() {
         binding = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val videoUrl = intent.getStringExtra("VIDEO_URL") ?: ""
+        val intentData = intent.data
+        val videoUrl = intentData?.toString() ?: intent.getStringExtra("VIDEO_URL") ?: ""
         if (videoUrl.isNotEmpty()) {
             initPlayer(videoUrl)
         }
