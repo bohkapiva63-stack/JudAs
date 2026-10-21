@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="judas_green">#12CF51</color>
+    <color name="judas_green_dark">#0E9F3E</color>
+    <color name="judas_green_accent">#00FF87</color>
+    <color name="bg_dark">#0A1C11</color>
+    <color name="card_dark">#132B1D</color>
+    <color name="text_light">#E0F2E5</color>
+    <color name="text_muted">#80C496</color>
+</resources>
