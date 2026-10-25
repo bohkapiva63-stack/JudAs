@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.brouken.player">
 
+    <uses-sdk tools:overrideLibrary="com.arthenica.ffmpegkit" />
+
     <uses-feature
         android:name="android.software.leanback"
         android:required="false" />
@@ -42,7 +44,7 @@
         <activity
             android:name=".PlayerActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
-            android:launchMode="singleTop"
+            android:launchMode="standard"
             android:supportsPictureInPicture="true"
             android:exported="true"
             tools:targetApi="n">
