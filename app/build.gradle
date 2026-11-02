@@ -18,19 +18,23 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("${rootDir}/JudAs-Player.jks")
-            storePassword 'justplayer'
-            keyAlias 'JudAsPlayer'
-            keyPassword 'justplayer'
-            v1SigningEnabled true
-            v2SigningEnabled true
+            if (file("${rootDir}/JudAs-Player.jks").exists()) {
+                storeFile file("${rootDir}/JudAs-Player.jks")
+                storePassword 'justplayer'
+                keyAlias 'JudAsPlayer'
+                keyPassword 'justplayer'
+                v1SigningEnabled true
+                v2SigningEnabled true
+            }
         }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig signingConfigs.release
+            if (file("${rootDir}/JudAs-Player.jks").exists()) {
+                signingConfig signingConfigs.release
+            }
             //proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
