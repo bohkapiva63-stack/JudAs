@@ -3,6 +3,7 @@ package com.brouken.player;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 
@@ -51,6 +52,9 @@ class Prefs {
     public boolean firstRun = true;
     public boolean askScope = true;
     public boolean autoPiP = false;
+    public boolean afrEnabled = true;
+    public int subtitleColor = Color.parseColor("#FFEE58");
+    public float subtitleSize = 1.0f;
 
     private LinkedHashMap positions;
 
@@ -84,6 +88,14 @@ class Prefs {
             scopeUri = Uri.parse(mSharedPreferences.getString(PREF_KEY_SCOPE_URI, null));
         askScope = mSharedPreferences.getBoolean(PREF_KEY_ASK_SCOPE, askScope);
         autoPiP = mSharedPreferences.getBoolean(PREF_KEY_AUTO_PIP, autoPiP);
+        afrEnabled = mSharedPreferences.getBoolean("afrEnabled", true);
+    }
+
+    public void updateAfr(boolean enabled) {
+        this.afrEnabled = enabled;
+        final SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean("afrEnabled", enabled);
+        editor.commit();
     }
 
     public void updateMedia(final Context context, final Uri uri, final String type) {
@@ -130,11 +142,28 @@ class Prefs {
         if (mediaUri == null)
             return;
 
+        String uriStr = mediaUri.toString();
+        if (uriStr.contains("127.0.0.1") || uriStr.contains("localhost") || uriStr.contains(":8090") || uriStr.contains(":8080")) {
+            return;
+        }
+
         while (positions.size() > 100)
             positions.remove(positions.keySet().toArray()[0]);
 
-        positions.put(mediaUri.toString(), position);
+        positions.put(uriStr, position);
         savePositions();
+    }
+
+    public long getPosition() {
+        if (mediaUri == null) return 0L;
+        String uriStr = mediaUri.toString();
+        if (uriStr.contains("127.0.0.1") || uriStr.contains("localhost") || uriStr.contains(":8090") || uriStr.contains(":8080")) {
+            return 0L;
+        }
+        Object val = positions.get(uriStr);
+        if (val != null)
+            return (long) val;
+        return 0L;
     }
 
     public void updateBrightness(final int brightness) {
@@ -184,34 +213,6 @@ class Prefs {
             positions = new LinkedHashMap(10);
         }
     }
-
-    public long getPosition() {
-        Object val = positions.get(mediaUri.toString());
-        if (val != null)
-            return (long) val;
-
-        // Return position for uri from limited scope (loaded after using Next action)
-        if (ContentResolver.SCHEME_CONTENT.equals(mediaUri.getScheme())) {
-            final String searchPath = SubtitleUtils.getTrailPathFromUri(mediaUri);
-            if (searchPath == null || searchPath.length() < 1)
-                return 0L;
-            final Set<String> keySet = positions.keySet();
-            final Object[] keys = keySet.toArray();
-            for (int i = keys.length; i > 0; i--) {
-                final String key = (String) keys[i - 1];
-                final Uri uri = Uri.parse(key);
-                if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
-                    final String keyPath = SubtitleUtils.getTrailPathFromUri(uri);
-                    if (searchPath.equals(keyPath)) {
-                        return (long) positions.get(key);
-                    }
-                }
-            }
-        }
-
-        return 0L;
-    }
-
     public void updateOrientation() {
         final SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
         sharedPreferencesEditor.putInt(PREF_KEY_ORIENTATION, orientation.value);

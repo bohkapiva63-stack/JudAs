@@ -46,6 +46,23 @@ class CustomDefaultTimeBar extends DefaultTimeBar {
         }
     }
 
+    public void updateBufferProgress(long bufferedPosition, long duration) {
+        if (duration > 0) {
+            setBufferedPosition(bufferedPosition);
+        }
+    }
+
+    public int getScrubberXForPosition(long position, long duration) {
+        if (duration <= 0) return getWidth() / 2;
+        int paddingLeft = getPaddingLeft();
+        int paddingRight = getPaddingRight();
+        int usableWidth = getWidth() - paddingLeft - paddingRight;
+        if (usableWidth <= 0) return getWidth() / 2;
+
+        float fraction = Math.max(0f, Math.min(1f, (float) position / duration));
+        return (int) (paddingLeft + fraction * usableWidth);
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN && scrubberBar != null) {

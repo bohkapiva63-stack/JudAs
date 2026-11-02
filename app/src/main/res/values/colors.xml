@@ -4,9 +4,14 @@
     <color name="white">#FFFFFFFF</color>
     <color name="green">#10B981</color>
     <color name="green_accent">#059669</color>
-    <color name="green_focused">#1F7A4C</color>
+    <color name="green_focused">#10B981</color>
 
-    <color name="ui_controls_background">#CC071A12</color>
+    <color name="m3_surface">#071A12</color>
+    <color name="m3_surface_variant">#0B2419</color>
+    <color name="m3_primary">#10B981</color>
+    <color name="m3_on_primary">#04100B</color>
+
+    <color name="ui_controls_background">#E6071A12</color>
     <color name="exo_bottom_bar_background">@color/ui_controls_background</color>
     <color name="exo_black_opacity_60">#CC05140E</color>
     <color name="exo_black_opacity_70">#E6071A12</color>

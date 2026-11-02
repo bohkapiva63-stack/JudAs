@@ -291,8 +291,19 @@ class Utils {
     }
 
     public static boolean isSupportedNetworkUri(final Uri uri) {
+        if (uri == null || uri.getScheme() == null) return false;
         final String scheme = uri.getScheme();
         return scheme.startsWith("http") || scheme.equals("rtsp");
+    }
+
+    public static boolean isSupportedUri(final Context context, final Uri uri) {
+        if (uri == null) return false;
+        final String scheme = uri.getScheme();
+        if (scheme == null) return false;
+        if (scheme.startsWith("http") || scheme.equals("rtsp") || scheme.equals("content") || scheme.equals("file")) {
+            return true;
+        }
+        return fileExists(context, uri);
     }
 
     public static boolean isTvBox(Activity activity) {

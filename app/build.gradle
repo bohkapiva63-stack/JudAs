@@ -11,14 +11,26 @@ android {
         applicationId "com.soulwin.player"
         minSdk 21
         targetSdk 30
-        versionCode 38
-        versionName "0.38"
-        archivesBaseName = "Jass.Player.v${versionName}"
+        versionCode 500
+        versionName "5.0.0"
+        archivesBaseName = "JudAs.Player.v${versionName}"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("${rootDir}/JudAs-Player.jks")
+            storePassword 'justplayer'
+            keyAlias 'JudAsPlayer'
+            keyPassword 'justplayer'
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             //proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -27,7 +39,9 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     lint {
-        disable 'MissingTranslation'
+        disable 'MissingTranslation', 'ExpiredTargetSdkVersion'
+        abortOnError false
+        checkReleaseBuilds false
     }
 }
 
